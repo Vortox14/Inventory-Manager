@@ -2,7 +2,7 @@ local core = {}
 core.combat = require("InventoryManager/combat")
 local native = require("InventoryManager/NativeBindings")
 
-core.VERSION = "0.3.0"
+core.VERSION = "0.3.0.1"
 core.VERSION_MONIKER = "The Modulation Update"
 core.ANALYSIS_API = 10
 
@@ -2538,10 +2538,10 @@ function core.refreshParty()
     local player = get_player()
     if player then
         local runtimePlayerId = get_chara_id(player)
-        if runtimePlayerId ~= nil and character_id_hex32(runtimePlayerId) ~= character_id_hex32(native.ARISEN_ID) then
+        if runtimePlayerId ~= nil and native.characterIdHex32(runtimePlayerId) ~= native.characterIdHex32(native.ARISEN_ID) then
             core.debugLog("Basic",
                 "Player runtime CharacterID mismatch: runtime=%s canonical=%s; using canonical ItemDefine.ArisenCharaId.",
-                tostring(character_id_hex32(runtimePlayerId)), tostring(character_id_hex32(native.ARISEN_ID)))
+                tostring(native.characterIdHex32(runtimePlayerId)), tostring(native.characterIdHex32(native.ARISEN_ID)))
         end
         table.insert(result, {
             label = "Player",
@@ -2568,10 +2568,10 @@ function core.refreshParty()
         local key = character_key(mainPawn)
         seen[key] = true
         local runtimeMainPawnId = get_chara_id(mainPawn)
-        if runtimeMainPawnId ~= nil and character_id_hex32(runtimeMainPawnId) ~= character_id_hex32(native.MAIN_PAWN_ID) then
+        if runtimeMainPawnId ~= nil and native.characterIdHex32(runtimeMainPawnId) ~= native.characterIdHex32(native.MAIN_PAWN_ID) then
             core.debugLog("Basic",
                 "Main Pawn runtime CharacterID mismatch: runtime=%s canonical=%s; using canonical ItemDefine.MainPawnCharaId.",
-                tostring(character_id_hex32(runtimeMainPawnId)), tostring(character_id_hex32(native.MAIN_PAWN_ID)))
+                tostring(native.characterIdHex32(runtimeMainPawnId)), tostring(native.characterIdHex32(native.MAIN_PAWN_ID)))
         end
         local member = {
             label = "Main Pawn",
