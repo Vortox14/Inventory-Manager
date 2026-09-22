@@ -9,6 +9,8 @@ local inventoryRefreshText = "Inventory has not been refreshed yet."
 local inventoryRefreshCount = 0
 local inventoryCatalogCount = 0
 local FIRST_USE_EVER = 4
+local WINDOW_NO_RESIZE = 1 << 1
+local WINDOW_NO_MOVE = 1 << 2
 local HORIZONTAL_SCROLLBAR = 1 << 11
 local WIDTH_STRETCH = 1 << 3
 local COLUMN_DEFAULT_SORT = 1 << 2
@@ -3815,6 +3817,20 @@ end
 
 local function drawSettingsPage()
     imgui.text("Settings")
+
+    imgui.separator()
+    imgui.text("Window")
+    local changed, value = imgui.checkbox(
+        "Lock Window Position##InventoryManagerLockWindowPosition",
+        core.getWindowLockPosition())
+    if changed then core.setWindowLockPosition(value) end
+
+    changed, value = imgui.checkbox(
+        "Lock Window Size##InventoryManagerLockWindowSize",
+        core.getWindowLockSize())
+    if changed then core.setWindowLockSize(value) end
+    imgui.text("Position and size locks are independent and are saved in InventoryManager.json.")
+
     imgui.separator()
     imgui.text("Stack Limits")
     drawStackOverrideControls("##Settings")
@@ -3989,10 +4005,14 @@ function window.draw()
     local s = core.getUiFontSize()
     imgui.set_next_window_size(Vector2f.new(s * 82, s * 46), FIRST_USE_EVER)
 
+    local windowFlags = 0
+    if core.getWindowLockPosition() then windowFlags = windowFlags | WINDOW_NO_MOVE end
+    if core.getWindowLockSize() then windowFlags = windowFlags | WINDOW_NO_RESIZE end
+
     local stillOpen = imgui.begin_window(
         "Inventory Manager v" .. tostring(core.VERSION or "?") .. " - " .. tostring(core.VERSION_MONIKER or "") .. "###InventoryManagerWindow",
         true,
-        0)
+        windowFlags)
     if not stillOpen then
         imgui.end_window()
         window.setOpen(false)
