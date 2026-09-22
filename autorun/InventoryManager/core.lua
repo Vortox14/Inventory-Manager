@@ -2,7 +2,7 @@ local core = {}
 core.combat = require("InventoryManager/combat")
 local native = require("InventoryManager/NativeBindings")
 
-core.VERSION = "0.3.0.1"
+core.VERSION = "0.3.0.2"
 core.VERSION_MONIKER = "The Modulation Update"
 core.ANALYSIS_API = 10
 
