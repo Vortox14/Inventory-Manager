@@ -2,7 +2,7 @@ local core = {}
 core.combat = require("InventoryManager/combat")
 local native = require("InventoryManager/NativeBindings")
 
-core.VERSION = "0.3.0.2"
+core.VERSION = "0.3.0.3"
 core.VERSION_MONIKER = "The Modulation Update"
 core.ANALYSIS_API = 10
 
@@ -397,6 +397,8 @@ core.ui = {
     },
     autoApplyQuantity = savedConfig.AutoApplyQuantity == true,
     rowsPerPage = clamp_rows_per_page(savedConfig.RowsPerPage, 40),
+    lockWindowPosition = savedConfig.LockWindowPosition == true,
+    lockWindowSize = savedConfig.LockWindowSize == true,
 }
 
 -- Transfer capacity protection is intentionally runtime-only. The Analysis window
@@ -428,6 +430,8 @@ local function save_config()
         StorageInventorySplit = core.ui.inventorySplit.Storage,
         AutoApplyQuantity = core.ui.autoApplyQuantity == true,
         RowsPerPage = core.ui.rowsPerPage,
+        LockWindowPosition = core.ui.lockWindowPosition == true,
+        LockWindowSize = core.ui.lockWindowSize == true,
         DebugLogLevel = core.getDebugLogLevel(),
         PawnCleanerEnabled = core.pawnCleaner.enabled == true,
         PawnCleanerPollTicks = core.pawnCleaner.pollTicks,
@@ -741,6 +745,26 @@ function core.setRowsPerPage(value)
     core.ui.rowsPerPage = clamp_rows_per_page(value, core.ui.rowsPerPage or 40)
     save_config()
     return core.ui.rowsPerPage
+end
+
+function core.getWindowLockPosition()
+    return core.ui.lockWindowPosition == true
+end
+
+function core.setWindowLockPosition(enabled)
+    core.ui.lockWindowPosition = enabled == true
+    save_config()
+    return core.ui.lockWindowPosition
+end
+
+function core.getWindowLockSize()
+    return core.ui.lockWindowSize == true
+end
+
+function core.setWindowLockSize(enabled)
+    core.ui.lockWindowSize = enabled == true
+    save_config()
+    return core.ui.lockWindowSize
 end
 
 
