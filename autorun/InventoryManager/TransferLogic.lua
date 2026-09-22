@@ -444,8 +444,8 @@ function M.attach(core)
         if itemId <= 0 or amount <= 0 or sourceId == nil then
             return nil, "Invalid native stack source request."
         end
-        if not native.getStorageDataByStorageIdMethod then
-            return nil, "Exact ItemManager.getStorageDataByStorageId(System.Int32) method is unavailable."
+        if not native.getStorageDataByIdMethod then
+            return nil, "Exact ItemManager.getStorageData(System.Int32, app.CharacterID) method is unavailable."
         end
 
         -- A healthy fungible inventory stack is represented by one positive
@@ -499,11 +499,16 @@ function M.attach(core)
 
         local im = S.getItemManager()
         if not im then return nil, "ItemManager not ready." end
+        -- StorageId is not assumed to be globally unique across inventories.
+        -- Resolve the value-type record through DD2's owner-aware lookup, then use
+        -- the StorageId from the live master row only as a verification key.
         local storageData = S.safeCall(function()
-            return native.getStorageDataByStorageIdMethod:call(im, storageId)
+            return native.getStorageDataByIdMethod:call(im, itemId, sourceId)
         end, nil)
         if not storageData then
-            return nil, string.format("getStorageDataByStorageId(%s) returned no StorageData.", tostring(storageId))
+            return nil, string.format(
+                "getStorageData(%d, %s) returned no StorageData.",
+                itemId, tostring(sourceId))
         end
 
         local actualItemId = storage_data_item_id(storageData)
@@ -627,16 +632,15 @@ function M.attach(core)
         local im = S.getItemManager()
         if not im then return false, "ItemManager not ready." end
 
-        -- DD2 exposes an exact StorageId resolver. Prefer it over borrowing the raw
-        -- nested _Param value from StorageMasterData; this is the native path that
-        -- makes per-instance selection meaningful.
-        local storageData = native.getStorageDataByStorageIdMethod and S.safeCall(function()
-            return native.getStorageDataByStorageIdMethod:call(im, storageId)
-        end, nil) or nil
+        -- The StorageMasterData row was resolved from the requested source owner
+        -- and exact local StorageId. Use its inline StorageData value directly:
+        -- StorageId can collide across different owners, so a global
+        -- getStorageDataByStorageId(StorageId) lookup is not authoritative here.
+        local storageData = S.getStorageMasterParam(row)
         if not storageData then
-            storageData = S.safeField(row, "_Param", nil) or S.getStorageMasterParam(row)
+            storageData = S.safeField(row, "_Param", nil)
         end
-        if not storageData then return false, "Could not resolve the exact StorageData instance." end
+        if not storageData then return false, "Could not resolve the source row's exact StorageData instance." end
         if storage_data_item_id(storageData) ~= itemId then
             return false, "Exact instance StorageData ItemID mismatch."
         end
